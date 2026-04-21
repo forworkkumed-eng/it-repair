@@ -451,7 +451,13 @@
     <div class="success-msg">นายบอยได้รับเรื่องของคุณแล้ว<br>ขอขอบคุณที่กรุณา 🙏</div>
   </div>
 </div>
-
+// เพิ่ม event กด backdrop เพื่อปิด
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+    liff.closeWindow();
+  }
+});
 <script>
 // ─────────────────────────────────────────────────────────────
 //  🔧 CONFIG — แก้ค่าเหล่านี้ให้ตรงกับของคุณ
