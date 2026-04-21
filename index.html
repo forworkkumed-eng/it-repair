@@ -404,51 +404,44 @@ let autoCloseTimer = null;
 // ─────────────────────────────────
 //  INIT
 // ─────────────────────────────────
-// ฟังก์ชันดึงค่าพารามิเตอร์ที่รองรับทั้งบน Browser ทั่วไปและใน LIFF
-function getSafeParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    let value = urlParams.get(name);
+window.addEventListener('DOMContentLoaded', async () => {
+  // อ่าน ?category=
+  const params = new URLSearchParams(window.location.search);
+  const catKey = (params.get('category') || '').toLowerCase();
+  catInfo = CATEGORY_MAP[catKey];
 
-    // ถ้าหาไม่เจอ ให้ลองหาในพารามิเตอร์ liff.state (ที่ SDK มักจะเก็บไว้หลัง Redirect)
-    if (!value) {
-        const state = urlParams.get('liff.state') || urlParams.get('state');
-        if (state) {
-            const stateParams = new URLSearchParams(state);
-            value = stateParams.get(name);
-        }
-    }
-    return value;
+  if (!catInfo) {
+    showError(`ไม่พบหมวดหมู่ "${catKey}" — กรุณาตรวจสอบ URL`);
+    return;
+  }
+
+  // แสดง pill
+  document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
+
+  if (DEV_MODE) {
+    userProfile = { displayName: "Test User (Dev)", pictureUrl: "", userId: "Udev123" };
+    showDetailSheet();
+    return;
+  }
+
+  try {
+    setSpinner('กำลังเชื่อมต่อ LINE...');
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+
+    setSpinner('กำลังดึงข้อมูลผู้ใช้...');
+    userProfile = await liff.getProfile();
+
+    showDetailSheet();
+  } catch (err) {
+    console.error(err);
+    showError(`เกิดข้อผิดพลาด: ${err.message}`);
+  }
+});
+
+function setSpinner(text) {
+  document.getElementById('spinner-text').textContent = text;
 }
-
-async function initializeLiff() {
-    try {
-        // เปลี่ยน YOUR_LIFF_ID เป็น ID จริงของคุณ
-        await liff.init({ liffId: "2009847955-YjVZZBXW" }); 
-
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
-        }
-
-        // ดึงค่า category
-        const category = getSafeParam('category');
-        
-        if (category) {
-            // แสดงผลในจุดต่างๆ ของหน้าเว็บ
-            document.getElementById('cat-name-display').innerText = category;
-            // ซ่อนหน้า Splash และโชว์แบบฟอร์ม
-            showForm(); 
-        } else {
-            alert("กรุณาเข้าใช้งานผ่านลิงก์ที่ระบุหมวดหมู่");
-        }
-
-    } catch (err) {
-        console.error("LIFF Init Error:", err);
-    }
-}
-
-// เรียกใช้งานเมื่อโหลดหน้าเว็บเสร็จ
-window.onload = initializeLiff;
 
 // ─────────────────────────────────
 //  SHOW DETAIL SHEET
