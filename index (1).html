@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>บันทึกบริการด้าน IT</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+  :root {
+    --brand:       #0a84ff;
+    --brand-dark:  #0060cc;
+    --brand-glow:  rgba(10,132,255,.22);
+    --card-bg:     #ffffff;
+    --text-main:   #0d1b2a;
+    --text-muted:  #6b7a8d;
+    --radius-lg:   18px;
+    --radius-xl:   26px;
+    --shadow-card: 0 2px 16px rgba(0,0,0,.08);
+    --shadow-hover:0 8px 32px rgba(10,132,255,.2);
+    --gold:        #c9a84c;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background:
+      linear-gradient(160deg, rgba(0,72,36,0.93) 0%, rgba(0,44,20,0.90) 100%),
+      url('https://medicine.ku.ac.th/kumed/wp-content/uploads/2024/08/KU-thai-%E0%B9%81%E0%B8%9E%E0%B8%97%E0%B8%A2%E0%B9%8C-.png') center/cover fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    margin: 0;
+    padding-bottom: 48px;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: linear-gradient(135deg, #004d26 0%, #003318 60%, #00220f 100%);
+    padding: 30px 20px 26px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 3px solid var(--gold);
+  }
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 220px; height: 220px;
+    background: rgba(201,168,76,.10);
+    border-radius: 50%;
+  }
+  .app-header::after {
+    content: '';
+    position: absolute;
+    bottom: -70px; left: 28%;
+    width: 260px; height: 260px;
+    background: rgba(255,255,255,.03);
+    border-radius: 50%;
+  }
+  .header-inner { position: relative; z-index: 1; }
+
+  .header-icon {
+    width: 52px; height: 52px;
+    background: rgba(201,168,76,.22);
+    border-radius: 16px;
+    border: 1px solid rgba(201,168,76,.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .header-title {
+    font-size: 23px; font-weight: 800;
+    color: #fff; margin: 0 0 3px;
+    letter-spacing: -.3px;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: var(--gold);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* ── Profile Chip ── */
+  .profile-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 40px;
+    padding: 6px 16px 6px 6px;
+    margin-top: 18px;
+    width: fit-content;
+  }
+  .profile-chip img {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.5);
+  }
+  .profile-chip .avatar-placeholder {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; color: #fff;
+  }
+  .profile-name  { font-size: 13px; font-weight: 700; color: #fff; }
+  .profile-label { font-size: 11px; color: rgba(255,255,255,.65); }
+
+  /* ── Main Content ── */
+  .main-content { padding: 22px 16px 0; }
+
+  .section-label {
+    font-size: 11.5px; font-weight: 700;
+    color: rgba(255,255,255,.55);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin: 0 0 12px;
+  }
+  .section-label span {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+
+  /* ── Category Grid ── */
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .cat-card {
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    padding: 18px 14px 16px;
+    cursor: pointer;
+    transition: all .22s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: var(--shadow-card);
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 10px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+  }
+  .cat-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: transparent;
+    border-radius: inherit;
+    transition: background .18s;
+  }
+  .cat-card:active::after { background: rgba(0,0,0,.04); }
+
+  .cat-card .icon-wrap {
+    width: 46px; height: 46px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+    flex-shrink: 0;
+  }
+  .cat-card:hover .icon-wrap { transform: scale(1.1) rotate(-3deg); }
+  .cat-card.selected .icon-wrap { transform: scale(1.15) rotate(-6deg); }
+
+  .cat-card .cat-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.35;
+  }
+  .cat-card .cat-check {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px;
+    background: var(--brand);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px;
+    opacity: 0; transform: scale(.5);
+    transition: all .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .cat-card.selected {
+    border-color: var(--brand);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .cat-card.selected .cat-check { opacity: 1; transform: scale(1); }
+
+  .cat-card:nth-child(1) .icon-wrap { background: #fff0e5; }
+  .cat-card:nth-child(2) .icon-wrap { background: #e5f3ff; }
+  .cat-card:nth-child(3) .icon-wrap { background: #eaf5ea; }
+  .cat-card:nth-child(4) .icon-wrap { background: #f3ecff; }
+  .cat-card.selected:nth-child(1) { background: linear-gradient(135deg,#fff8f3,#fff); }
+  .cat-card.selected:nth-child(2) { background: linear-gradient(135deg,#f0f7ff,#fff); }
+  .cat-card.selected:nth-child(3) { background: linear-gradient(135deg,#f0faf0,#fff); }
+  .cat-card.selected:nth-child(4) { background: linear-gradient(135deg,#f7f2ff,#fff); }
+
+  /* ── Detail Card ── */
+  .detail-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 18px;
+  }
+  .detail-card label {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-main); margin-bottom: 10px; display: block;
+  }
+  .detail-card label small {
+    font-weight: 400; color: var(--text-muted); font-size: 12px;
+  }
+  .detail-textarea {
+    width: 100%;
+    border: 1.5px solid #e8ecf0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 15px;
+    resize: none;
+    color: var(--text-main);
+    background: #fafbfc;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  .detail-textarea::placeholder { color: #b0bcc8; }
+  .detail-textarea:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-glow);
+    background: #fff;
+  }
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ── Submit ── */
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #0a84ff, #005ec4);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: #fff;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 17px; font-weight: 700;
+    letter-spacing: .3px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(10,132,255,.35);
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    position: relative; overflow: hidden;
+  }
+  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(10,132,255,.45); }
+  .btn-submit:active { transform: scale(.98); }
+  .btn-submit:disabled {
+    background: linear-gradient(135deg,#a8c8f0,#8ab4dc);
+    box-shadow: none; cursor: not-allowed; transform: none;
+  }
+  .btn-submit .spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Validation Alert ── */
+  .val-alert {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #7a5800;
+    margin-bottom: 14px;
+    display: none;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+  /* ── Success Overlay ── */
+  .success-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.60);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .success-overlay.show { opacity: 1; pointer-events: auto; }
+
+  .success-card {
+    background: #fff;
+    border-radius: var(--radius-xl);
+    padding: 40px 28px 32px;
+    text-align: center;
+    width: min(320px, 88vw);
+    transform: scale(.82) translateY(24px);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    position: relative;
+  }
+  .success-overlay.show .success-card { transform: scale(1) translateY(0); }
+
+  /* animated ring */
+  .success-ring {
+    width: 86px; height: 86px;
+    margin: 0 auto 22px;
+    position: relative;
+  }
+  .success-ring svg {
+    position: absolute; inset: 0;
+    animation: ringPop .6s cubic-bezier(.34,1.56,.64,1) .05s both;
+  }
+  @keyframes ringPop { from { transform: scale(0) rotate(-90deg); opacity:0; } to { transform: scale(1) rotate(0deg); opacity:1; } }
+
+  .success-ring .check-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    animation: checkPop .45s cubic-bezier(.34,1.56,.64,1) .25s both;
+  }
+  @keyframes checkPop { from { transform: scale(0); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+  .success-title {
+    font-size: 21px; font-weight: 800;
+    color: var(--text-main); margin-bottom: 6px;
+  }
+  .success-msg {
+    font-size: 14px; color: var(--text-muted);
+    line-height: 1.65; margin-bottom: 0;
+  }
+
+  /* progress bar */
+  .success-progress {
+    height: 3px;
+    background: #e8ecf0;
+    border-radius: 99px;
+    margin: 20px 0 22px;
+    overflow: hidden;
+  }
+  .success-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #30d158, #20a040);
+    border-radius: 99px;
+    width: 100%;
+    transform-origin: left;
+    animation: shrink 2s linear forwards;
+  }
+  @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+  .btn-ok {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #30d158, #1aad46);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(48,209,88,.35);
+    transition: all .18s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-ok:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(48,209,88,.45); }
+  .btn-ok:active { transform: scale(.97); }
+
+  /* ── Loading Screen ── */
+  #loading-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #004d26, #001a0d);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 18px;
+    z-index: 10000;
+    transition: opacity .4s;
+  }
+  #loading-screen .loader-icon { font-size: 52px; animation: pulse 1.3s ease-in-out infinite; }
+  #loading-screen p { color: rgba(255,255,255,.8); font-size: 15px; font-weight: 500; margin: 0; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.12);opacity:.7;} }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="loader-icon">🛠️</div>
+  <p>กำลังโหลดระบบแจ้งซ่อม...</p>
+</div>
+
+<!-- Header -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-icon">🛠️</div>
+    <h1 class="header-title">บันทึกบริการด้าน IT</h1>
+    <p class="header-subtitle">บริการด้านเทคโนโลยีสารสนเทศ</p>
+    <div class="profile-chip" id="profile-chip">
+      <div class="avatar-placeholder">👤</div>
+      <div>
+        <div class="profile-name" id="profile-name">กำลังโหลด...</div>
+        <div class="profile-label">ผู้แจ้ง</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main-content">
+
+  <p class="section-label"><span><i class="bi bi-grid-3x3-gap-fill"></i> เลือกประเภทปัญหา</span></p>
+
+  <div class="category-grid">
+    <button class="cat-card" data-category="อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน" onclick="selectCategory(this)">
+      <div class="icon-wrap">🖥️</div>
+      <div class="cat-name">อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </button>
+    <button class="cat-card" data-category="อินเทอร์เน็ต และ ระบบเครือข่าย" onclick="selectCategory(this)">
+      <div class="icon-wrap">🌐</div>
+      <div class="cat-name">อินเทอร์เน็ต และ ระบบเครือข่าย</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </button>
+    <button class="cat-card" data-category="โปรแกรม และ ระบบงานมหาวิทยาลัย" onclick="selectCategory(this)">
+      <div class="icon-wrap">💻</div>
+      <div class="cat-name">โปรแกรม และ ระบบงานมหาวิทยาลัย</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </button>
+    <button class="cat-card" data-category="ห้องประชุม และ โสตทัศนูปกรณ์" onclick="selectCategory(this)">
+      <div class="icon-wrap">📽️</div>
+      <div class="cat-name">ห้องประชุม และ โสตทัศนูปกรณ์</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </button>
+  </div>
+
+  <div class="detail-card">
+    <label for="detail-input">
+      รายละเอียดปัญหา
+      <small>— อธิบายอาการ</small>
+    </label>
+    <textarea
+      id="detail-input"
+      class="detail-textarea"
+      rows="5"
+      maxlength="500"
+      placeholder="เช่น คอมพี่น้ำหวานจอดำ..."
+      oninput="updateCharCount(this)"
+    ></textarea>
+    <div class="char-count"><span id="char-count">0</span>/500</div>
+  </div>
+
+  <div class="val-alert" id="val-alert">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+    <span id="val-msg">กรุณาเลือกประเภทปัญหา และกรอกรายละเอียด</span>
+  </div>
+
+  <button class="btn-submit" id="btn-submit" onclick="handleSubmit()">
+    <i class="bi bi-send-fill" id="btn-icon"></i>
+    <span id="btn-text">บันทึกการแจ้งซ่อม</span>
+    <div class="spinner" id="btn-spinner"></div>
+  </button>
+
+</main>
+
+<!-- ✅ Success Overlay — กดปิดได้ทันที หรือรอ 2 วิปิดอัตโนมัติ -->
+<div class="success-overlay" id="success-overlay" onclick="handleOverlayClick(event)">
+  <div class="success-card" id="success-card">
+
+    <!-- animated ring -->
+    <div class="success-ring">
+      <svg viewBox="0 0 86 86" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="43" cy="43" r="40" stroke="#30d158" stroke-width="4" stroke-linecap="round"
+          stroke-dasharray="251" stroke-dashoffset="0" />
+      </svg>
+      <div class="check-icon">✅</div>
+    </div>
+
+    <div class="success-title">แจ้งซ่อมสำเร็จ!</div>
+    <div class="success-msg">นายบอยได้รับเรื่องของคุณแล้ว<br>ขอขอบคุณที่กรุณา 🙏</div>
+
+    <!-- countdown bar -->
+    <div class="success-progress">
+      <div class="success-progress-bar" id="progress-bar"></div>
+    </div>
+
+    <!-- ปุ่มปิดทันที -->
+    <button class="btn-ok" onclick="closeSuccess()">
+      <i class="bi bi-check2-circle"></i> ปิดหน้าต่าง
+    </button>
+
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbyNsYMffSG4igl-EZfZBj37ylQHBKXHThm6kOYAL3wo2V_X4b5FWEK8udLqZLRzAzb0TQ/exec";
+const LIFF_ID  = "2009847955-YjVZZBXW";
+const DEV_MODE = false;
+
+let userProfile      = null;
+let selectedCategory = null;
+let autoCloseTimer   = null;
+
+// ─────────────────────────────────
+//  LIFF Init
+// ─────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  if (DEV_MODE) {
+    setProfile({ displayName: "Test User (Dev Mode)", pictureUrl: "", userId: "Udev123" });
+    hideLoading();
+    return;
+  }
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const profile = await liff.getProfile();
+    setProfile(profile);
+  } catch (err) {
+    console.error("LIFF init error:", err);
+    setProfile({ displayName: "ไม่สามารถดึงข้อมูลได้", pictureUrl: "", userId: "-" });
+  } finally {
+    hideLoading();
+  }
+});
+
+function setProfile(profile) {
+  userProfile = profile;
+  const chip = document.getElementById('profile-chip');
+  if (profile.pictureUrl) {
+    chip.innerHTML = `
+      <img src="${profile.pictureUrl}" alt="avatar" />
+      <div>
+        <div class="profile-name">${profile.displayName}</div>
+        <div class="profile-label">ผู้แจ้ง</div>
+      </div>`;
+  } else {
+    document.getElementById('profile-name').textContent = profile.displayName;
+  }
+}
+
+function hideLoading() {
+  const el = document.getElementById('loading-screen');
+  el.style.opacity = '0';
+  setTimeout(() => el.remove(), 400);
+}
+
+// ─────────────────────────────────
+//  Category
+// ─────────────────────────────────
+function selectCategory(el) {
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCategory = el.dataset.category;
+  document.getElementById('val-alert').style.display = 'none';
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function updateCharCount(el) {
+  document.getElementById('char-count').textContent = el.value.length;
+}
+
+// ─────────────────────────────────
+//  Submit
+// ─────────────────────────────────
+async function handleSubmit() {
+  const detail = document.getElementById('detail-input').value.trim();
+  const msgEl  = document.getElementById('val-msg');
+
+  if (!selectedCategory && !detail) {
+    msgEl.textContent = 'กรุณาเลือกประเภทปัญหา และกรอกรายละเอียด';
+    showAlert(); return;
+  }
+  if (!selectedCategory) {
+    msgEl.textContent = 'กรุณาเลือกประเภทปัญหาก่อน';
+    showAlert(); return;
+  }
+  if (!detail) {
+    msgEl.textContent = 'กรุณากรอกรายละเอียดปัญหา';
+    showAlert(); return;
+  }
+
+  setLoading(true);
+
+  const payload = {
+    displayName : userProfile?.displayName || "Unknown",
+    userId      : userProfile?.userId      || "-",
+    pictureUrl  : userProfile?.pictureUrl  || "-",
+    category    : selectedCategory,
+    detail      : detail
+  };
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method  : "POST",
+      headers : { "Content-Type": "text/plain" },
+      body    : JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.status === "success") {
+      showSuccess();
+    } else {
+      throw new Error(json.message || "เกิดข้อผิดพลาด");
+    }
+  } catch (err) {
+    console.error("Submit error:", err);
+    msgEl.textContent = `เกิดข้อผิดพลาด: ${err.message}`;
+    showAlert();
+    setLoading(false);
+  }
+}
+
+function showAlert() {
+  const el = document.getElementById('val-alert');
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'fadeIn .25s ease';
+}
+
+function setLoading(on) {
+  const btn     = document.getElementById('btn-submit');
+  const icon    = document.getElementById('btn-icon');
+  const text    = document.getElementById('btn-text');
+  const spinner = document.getElementById('btn-spinner');
+  btn.disabled          = on;
+  icon.style.display    = on ? 'none' : '';
+  text.textContent      = on ? 'กำลังบันทึก...' : 'บันทึกการแจ้งซ่อม';
+  spinner.style.display = on ? 'block' : 'none';
+}
+
+// ─────────────────────────────────
+//  Success Overlay — แก้ไขหลัก
+// ─────────────────────────────────
+function showSuccess() {
+  const overlay = document.getElementById('success-overlay');
+
+  // reset progress bar animation
+  const bar = document.getElementById('progress-bar');
+  bar.style.animation = 'none';
+  void bar.offsetWidth;
+  bar.style.animation = 'shrink 2s linear forwards';
+
+  overlay.classList.add('show');
+
+  // auto-close หลัง 2 วินาที
+  autoCloseTimer = setTimeout(() => closeSuccess(), 2000);
+}
+
+function closeSuccess() {
+  // ยกเลิก auto-close ถ้ากดเองก่อน
+  if (autoCloseTimer) { clearTimeout(autoCloseTimer); autoCloseTimer = null; }
+
+  const overlay = document.getElementById('success-overlay');
+  overlay.classList.remove('show');
+
+  // ปิด LIFF หลัง animation จบ
+  setTimeout(() => {
+    if (!DEV_MODE && typeof liff !== 'undefined' && liff.isInClient()) {
+      liff.closeWindow();
+    }
+  }, 280);
+}
+
+// กด backdrop รอบนอก card → ปิด
+function handleOverlayClick(event) {
+  if (event.target === document.getElementById('success-overlay')) {
+    closeSuccess();
+  }
+}
+</script>
+
+</body>
+</html>
