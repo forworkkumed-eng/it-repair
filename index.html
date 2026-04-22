@@ -407,12 +407,20 @@ let autoCloseTimer = null;
 window.addEventListener('DOMContentLoaded', async () => {
 
   // 1) อ่าน ?category= จาก URL
+  //    LIFF อาจตัด query param ออกตอน redirect login
+  //    จึงเก็บไว้ใน sessionStorage ก่อน
   const params = new URLSearchParams(window.location.search);
-  const catKey = (params.get('category') || '').toLowerCase();
+  const catKeyFromURL = (params.get('category') || '').toLowerCase();
+
+  if (catKeyFromURL && CATEGORY_MAP[catKeyFromURL]) {
+    sessionStorage.setItem('it_category', catKeyFromURL);
+  }
+
+  const catKey = catKeyFromURL || sessionStorage.getItem('it_category') || '';
   catInfo = CATEGORY_MAP[catKey];
 
   if (!catInfo) {
-    showError(`ไม่พบหมวดหมู่ "${catKey}" — กรุณาตรวจสอบ URL`);
+    showError('ไม่พบหมวดหมู่ — กรุณาเปิดจากการ์ด LINE อีกครั้ง');
     return;
   }
 
@@ -428,7 +436,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     setSpinner('กำลังเชื่อมต่อ LINE...');
     await liff.init({ liffId: LIFF_ID });
 
-    if (!liff.isLoggedIn()) { liff.login(); return; }
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: `${location.origin}${location.pathname}?category=${catKey}` });
+      return;
+    }
 
     setSpinner('กำลังดึงข้อมูลผู้ใช้...');
     userProfile = await liff.getProfile();
