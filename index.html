@@ -406,55 +406,64 @@ let autoCloseTimer = null;
 // ─────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
 
-  // 1) อ่าน ?category= จาก URL
-  //    LIFF อาจตัด query param ออกตอน redirect login
-  //    จึงเก็บไว้ใน sessionStorage ก่อน
-  // LIFF อาจเก็บ query param ไว้ใน hash #liff.state= หลัง redirect login
-  let catFromHash = '';
-  try {
-    const hashStr = window.location.hash.replace(/^#/, '');
-    const liffState = new URLSearchParams(hashStr).get('liff.state');
-    if (liffState) {
-      catFromHash = new URLSearchParams(decodeURIComponent(liffState)).get('category') || '';
-    }
-  } catch(e) {}
-
-  const params = new URLSearchParams(window.location.search);
-  const catKeyFromURL = (params.get('category') || catFromHash || '').toLowerCase();
-
-  if (catKeyFromURL && CATEGORY_MAP[catKeyFromURL]) {
-    sessionStorage.setItem('it_category', catKeyFromURL);
-  }
-
-  const catKey = catKeyFromURL || sessionStorage.getItem('it_category') || '';
-  catInfo = CATEGORY_MAP[catKey];
-
-  if (!catInfo) {
-    showError('ไม่พบหมวดหมู่ — กรุณาเปิดจากการ์ด LINE อีกครั้ง');
-    return;
-  }
-
-  document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
+  // ── วิธีที่ถูกต้องสำหรับ LIFF ──
+  // LIFF จะ init ก่อนเสมอ แล้วค่อยอ่าน URL
+  // เพราะหลัง redirect login, LIFF จะ restore query param ให้อัตโนมัติ
+  // ถ้าใช้ liff.init() ก่อนแล้วค่อยอ่าน window.location.search
 
   if (DEV_MODE) {
+    catInfo = CATEGORY_MAP['hardware'];
     userProfile = { displayName: "Test User (Dev)", pictureUrl: "", userId: "Udev123" };
+    document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
     showDetailSheet();
     return;
   }
 
   try {
     setSpinner('กำลังเชื่อมต่อ LINE...');
+
+    // init LIFF ก่อน — หลัง init LIFF จะ restore URL พร้อม query param
     await liff.init({ liffId: LIFF_ID });
 
     if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: `${location.origin}${location.pathname}?category=${catKey}` });
+      liff.login();
       return;
     }
+
+    // อ่าน ?category= หลัง liff.init() เสร็จแล้ว
+    const params = new URLSearchParams(window.location.search);
+    let catKey = (params.get('category') || '').toLowerCase();
+
+    // fallback: ลองอ่านจาก hash #liff.state=?category=...
+    if (!catKey) {
+      try {
+        const hash = window.location.hash.replace(/^#/, '');
+        const state = new URLSearchParams(hash).get('liff.state') || '';
+        catKey = new URLSearchParams(decodeURIComponent(state)).get('category') || '';
+      } catch(e) {}
+    }
+
+    // fallback: sessionStorage (กรณี redirect loop)
+    if (!catKey) {
+      catKey = sessionStorage.getItem('it_category') || '';
+    }
+
+    catInfo = CATEGORY_MAP[catKey];
+
+    if (!catInfo) {
+      showError(`ไม่พบหมวดหมู่ "${catKey}" — กรุณาเปิดจากการ์ด LINE อีกครั้ง<br><small style="font-size:11px;opacity:.7">URL: ${window.location.href}</small>`);
+      return;
+    }
+
+    // บันทึก category ไว้ใช้ถ้า refresh
+    sessionStorage.setItem('it_category', catKey);
+    document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
 
     setSpinner('กำลังดึงข้อมูลผู้ใช้...');
     userProfile = await liff.getProfile();
 
     showDetailSheet();
+
   } catch (err) {
     console.error(err);
     showError(`เกิดข้อผิดพลาด: ${err.message}`);
