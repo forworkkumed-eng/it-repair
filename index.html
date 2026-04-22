@@ -402,43 +402,48 @@ let catInfo        = null;
 let autoCloseTimer = null;
 
 // ─────────────────────────────────
-//  INIT
+//  INIT — จุดเริ่มต้นเดียว
 // ─────────────────────────────────
-liff.init({ liffId: "2009847955-YjVZZBXW" })
-  .then(() => {
-    if (liff.isLoggedIn()) {
+window.addEventListener('DOMContentLoaded', async () => {
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const category  = urlParams.get('category');
+  // 1) อ่าน ?category= จาก URL
+  const params = new URLSearchParams(window.location.search);
+  const catKey = (params.get('category') || '').toLowerCase();
+  catInfo = CATEGORY_MAP[catKey];
 
-      const CATEGORY_MAP = {
-        "hardware" : "อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน",
-        "network"  : "อินเทอร์เน็ต และ ระบบเครือข่าย",
-        "software" : "โปรแกรม และ ระบบงานมหาวิทยาลัย",
-        "av"       : "ห้องประชุม และ โสตทัศนูปกรณ์",
-      };
+  if (!catInfo) {
+    showError(`ไม่พบหมวดหมู่ "${catKey}" — กรุณาตรวจสอบ URL`);
+    return;
+  }
 
-      if (category && CATEGORY_MAP[category]) {
-        // เลือกค่าใน dropdown อัตโนมัติ
-        const categorySelect = document.getElementById('category-select-id');
-        if (categorySelect) {
-          categorySelect.value = CATEGORY_MAP[category];
-        }
+  document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
 
-        // แสดงหัวข้อ
-        const displayTitle = document.getElementById('display-title');
-        if (displayTitle) {
-          displayTitle.innerText = "แจ้งซ่อมหมวดหมู่: " + CATEGORY_MAP[category];
-        }
-      }
+  if (DEV_MODE) {
+    userProfile = { displayName: "Test User (Dev)", pictureUrl: "", userId: "Udev123" };
+    showDetailSheet();
+    return;
+  }
 
-    } else {
-      liff.login();
-    }
-  })
-  .catch((err) => {
-    console.error("LIFF Initialization failed", err);
-  });
+  try {
+    setSpinner('กำลังเชื่อมต่อ LINE...');
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+
+    setSpinner('กำลังดึงข้อมูลผู้ใช้...');
+    userProfile = await liff.getProfile();
+
+    showDetailSheet();
+  } catch (err) {
+    console.error(err);
+    showError(`เกิดข้อผิดพลาด: ${err.message}`);
+  }
+});
+
+function setSpinner(text) {
+  document.getElementById('spinner-text').textContent = text;
+}
+
 // ─────────────────────────────────
 //  SHOW DETAIL SHEET
 // ─────────────────────────────────
