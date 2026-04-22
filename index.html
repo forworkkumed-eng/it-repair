@@ -409,8 +409,18 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 1) อ่าน ?category= จาก URL
   //    LIFF อาจตัด query param ออกตอน redirect login
   //    จึงเก็บไว้ใน sessionStorage ก่อน
+  // LIFF อาจเก็บ query param ไว้ใน hash #liff.state= หลัง redirect login
+  let catFromHash = '';
+  try {
+    const hashStr = window.location.hash.replace(/^#/, '');
+    const liffState = new URLSearchParams(hashStr).get('liff.state');
+    if (liffState) {
+      catFromHash = new URLSearchParams(decodeURIComponent(liffState)).get('category') || '';
+    }
+  } catch(e) {}
+
   const params = new URLSearchParams(window.location.search);
-  const catKeyFromURL = (params.get('category') || '').toLowerCase();
+  const catKeyFromURL = (params.get('category') || catFromHash || '').toLowerCase();
 
   if (catKeyFromURL && CATEGORY_MAP[catKeyFromURL]) {
     sessionStorage.setItem('it_category', catKeyFromURL);
