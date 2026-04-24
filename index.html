@@ -336,7 +336,7 @@
       class="detail-textarea"
       rows="4"
       maxlength="300"
-      placeholder="เช่น เครื่องพิมพ์ไม่ตอบสนอง, คอมพี่น้ำหวานจอดำ..."
+      placeholder="เช่น เครื่องพิมพ์ไม่ตอบสนอง, เน็ตหลุดบ่อย..."
       oninput="onDetailInput(this)"
     ></textarea>
     <div class="char-count" style="margin-top:4px;margin-bottom:16px;">
@@ -425,37 +425,39 @@ window.addEventListener('DOMContentLoaded', async () => {
     // init LIFF ก่อน — หลัง init LIFF จะ restore URL พร้อม query param
     await liff.init({ liffId: LIFF_ID });
 
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-
-    // อ่าน ?category= หลัง liff.init() เสร็จแล้ว
+    // อ่าน ?category= จาก URL ก่อน login
     const params = new URLSearchParams(window.location.search);
     let catKey = (params.get('category') || '').toLowerCase();
 
-    // fallback: ลองอ่านจาก hash #liff.state=?category=...
-    if (!catKey) {
-      try {
-        const hash = window.location.hash.replace(/^#/, '');
-        const state = new URLSearchParams(hash).get('liff.state') || '';
-        catKey = new URLSearchParams(decodeURIComponent(state)).get('category') || '';
-      } catch(e) {}
+    // ถ้ามี category ให้เก็บไว้ก่อน login
+    if (catKey && CATEGORY_MAP[catKey]) {
+      sessionStorage.setItem('it_category', catKey);
     }
 
-    // fallback: sessionStorage (กรณี redirect loop)
+    if (!liff.isLoggedIn()) {
+      // ส่ง category ไปใน state parameter
+      liff.login({ state: catKey });
+      return;
+    }
+
+    // หลัง login — ดึง category จาก URL ก่อน ถ้าไม่มีค่อยดึงจาก state
     if (!catKey) {
+      // ลองดู &state= ใน query string (LIFF return state กลับมาใน URL)
+      catKey = (params.get('state') || '').toLowerCase();
+    }
+
+    // fallback sessionStorage
+    if (!catKey || !CATEGORY_MAP[catKey]) {
       catKey = sessionStorage.getItem('it_category') || '';
     }
 
     catInfo = CATEGORY_MAP[catKey];
 
     if (!catInfo) {
-      showError(`ไม่พบหมวดหมู่ "${catKey}" — กรุณาเปิดจากการ์ด LINE อีกครั้ง<br><small style="font-size:11px;opacity:.7">URL: ${window.location.href}</small>`);
+      showError(`ไม่พบหมวดหมู่ — กรุณาเปิดจากการ์ด LINE อีกครั้ง`);
       return;
     }
 
-    // บันทึก category ไว้ใช้ถ้า refresh
     sessionStorage.setItem('it_category', catKey);
     document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
 
