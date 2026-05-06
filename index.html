@@ -3,197 +3,205 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>บันทึกบริการด้าน IT</title>
+<title>แจ้งปัญหา IT</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
+  :root {
+    --gold: #c9a84c;
+    --green-dark: #004d26;
+    --brand: #0a84ff;
+    --success: #30d158;
+    --radius: 16px;
+    --card: #ffffff;
+    --text: #0d1b2a;
+    --muted: #6b7a8d;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     font-family: 'Sarabun', sans-serif;
     background: linear-gradient(160deg, #004d26 0%, #001a0d 100%);
     min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
+    padding-bottom: 40px;
   }
 
-  /* ── Loading Splash ── */
-  #splash {
-    text-align: center; color: #fff;
-    padding: 40px 24px;
-    animation: fadeUp .4s ease both;
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #004d26, #002f17);
+    padding: 24px 20px 20px;
+    border-bottom: 3px solid var(--gold);
+    position: relative; overflow: hidden;
   }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:none;} }
-
-  .splash-icon {
-    width: 80px; height: 80px;
+  .header::after {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(201,168,76,.1); border-radius: 50%;
+  }
+  .header-inner { position: relative; z-index: 1; }
+  .header-icon {
+    width: 48px; height: 48px;
     background: rgba(201,168,76,.2);
-    border: 2px solid rgba(201,168,76,.4);
-    border-radius: 24px;
+    border: 1px solid rgba(201,168,76,.4);
+    border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 38px; margin: 0 auto 20px;
+    font-size: 24px; margin-bottom: 12px;
   }
-  .splash-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-  .splash-sub   { font-size: 13px; color: rgba(255,255,255,.6); margin-bottom: 28px; }
-  .cat-pill {
-    display: inline-flex; align-items: center; gap: 8px;
+  .header-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 3px; }
+  .header-sub   { font-size: 13px; color: var(--gold); font-weight: 500; }
+
+  /* ── Profile Chip ── */
+  .profile-chip {
+    display: flex; align-items: center; gap: 10px;
     background: rgba(255,255,255,.12);
     border: 1px solid rgba(255,255,255,.2);
-    border-radius: 99px; padding: 10px 20px;
-    font-size: 15px; font-weight: 700;
-    margin-bottom: 28px; backdrop-filter: blur(8px);
+    border-radius: 99px;
+    padding: 6px 14px 6px 6px;
+    margin-top: 14px; width: fit-content;
   }
-  .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .spinner {
-    width: 38px; height: 38px;
-    border: 3px solid rgba(255,255,255,.2);
-    border-top-color: #c9a84c;
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
+  .profile-chip img, .profile-chip .ava {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.4);
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner-text { font-size: 14px; color: rgba(255,255,255,.6); }
-
-  /* ── Detail Popup ── */
-  .detail-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.65);
-    backdrop-filter: blur(10px);
-    display: flex; align-items: flex-end; justify-content: center;
-    z-index: 900;
-    opacity: 0; pointer-events: none;
-    transition: opacity .25s ease;
-  }
-  .detail-overlay.show { opacity: 1; pointer-events: auto; }
-
-  .detail-sheet {
-    background: #fff;
-    border-radius: 24px 24px 0 0;
-    padding: 28px 20px 36px;
-    width: 100%;
-    max-width: 480px;
-    transform: translateY(100%);
-    transition: transform .32s cubic-bezier(.34,1.2,.64,1);
-  }
-  .detail-overlay.show .detail-sheet { transform: translateY(0); }
-
-  /* drag handle */
-  .sheet-handle {
-    width: 40px; height: 4px;
-    background: #e0e0e0; border-radius: 99px;
-    margin: 0 auto 20px;
-  }
-
-  /* category tag in sheet */
-  .sheet-cat {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: #f0f7ff; color: #0060cc;
-    font-size: 12px; font-weight: 700;
-    padding: 5px 14px; border-radius: 99px;
-    margin-bottom: 16px;
-  }
-
-  .sheet-title {
-    font-size: 18px; font-weight: 800;
-    color: #0d1b2a; margin-bottom: 4px;
-  }
-  .sheet-sub {
-    font-size: 13px; color: #6b7a8d; margin-bottom: 18px;
-  }
-
-  /* profile row */
-  .profile-row {
-    display: flex; align-items: center; gap: 10px;
-    background: #f7f8fa;
-    border-radius: 12px; padding: 10px 14px;
-    margin-bottom: 18px;
-  }
-  .profile-row img, .profile-row .ava {
-    width: 36px; height: 36px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
-    border: 2px solid #e0e6ef;
-  }
-  .profile-row .ava {
-    background: #c8d8e8;
+  .profile-chip .ava {
+    background: rgba(255,255,255,.25);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 16px; color: #fff;
   }
-  .profile-row .pname { font-size: 13px; font-weight: 700; color: #0d1b2a; }
-  .profile-row .plabel{ font-size: 11px; color: #6b7a8d; }
+  .profile-chip img { object-fit: cover; }
+  .p-name  { font-size: 13px; font-weight: 700; color: #fff; }
+  .p-label { font-size: 11px; color: rgba(255,255,255,.6); }
 
-  /* textarea */
+  /* ── Content ── */
+  .content { padding: 20px 16px 0; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700;
+    color: rgba(255,255,255,.5);
+    text-transform: uppercase; letter-spacing: 1.3px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── Category Grid ── */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 11px; margin-bottom: 20px;
+  }
+  .cat-card {
+    background: #fff;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 18px 14px 16px;
+    cursor: pointer;
+    transition: all .2s cubic-bezier(.34,1.4,.64,1);
+    box-shadow: 0 2px 14px rgba(0,0,0,.09);
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 10px;
+    position: relative; overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+  }
+  .cat-card:active { transform: scale(.96); }
+  .cat-card.selected {
+    border-color: var(--brand);
+    box-shadow: 0 6px 24px rgba(10,132,255,.2);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .cat-card .icon-wrap {
+    width: 46px; height: 46px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    transition: transform .2s;
+  }
+  .cat-card.selected .icon-wrap { transform: scale(1.15) rotate(-6deg); }
+  .cat-card .cat-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.35; }
+  .cat-card .cat-check {
+    position: absolute; top: 9px; right: 9px;
+    width: 22px; height: 22px;
+    background: var(--brand); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px;
+    opacity: 0; transform: scale(.5);
+    transition: all .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .cat-card.selected .cat-check { opacity: 1; transform: scale(1); }
+
+  .cat-card:nth-child(1) .icon-wrap { background: #fff0e5; }
+  .cat-card:nth-child(2) .icon-wrap { background: #e5f3ff; }
+  .cat-card:nth-child(3) .icon-wrap { background: #eaf5ea; }
+  .cat-card:nth-child(4) .icon-wrap { background: #f3ecff; }
+  .cat-card.selected:nth-child(1) { background: linear-gradient(135deg,#fff8f3,#fff); }
+  .cat-card.selected:nth-child(2) { background: linear-gradient(135deg,#f0f7ff,#fff); }
+  .cat-card.selected:nth-child(3) { background: linear-gradient(135deg,#f0faf0,#fff); }
+  .cat-card.selected:nth-child(4) { background: linear-gradient(135deg,#f7f2ff,#fff); }
+
+  /* ── Detail Card ── */
+  .detail-card {
+    background: #fff; border-radius: var(--radius);
+    padding: 18px; margin-bottom: 16px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.08);
+  }
   .field-label {
-    font-size: 13px; font-weight: 700;
-    color: #0d1b2a; margin-bottom: 8px;
+    font-size: 13px; font-weight: 700; color: var(--text);
+    margin-bottom: 10px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .field-label small { font-weight: 400; color: #6b7a8d; font-size: 11px; }
+  .field-label small { font-weight: 400; color: var(--muted); font-size: 11px; }
   .detail-textarea {
-    width: 100%;
-    border: 1.5px solid #e0e6ef;
-    border-radius: 14px;
-    padding: 12px 14px;
+    width: 100%; border: 1.5px solid #e0e6ef;
+    border-radius: 12px; padding: 12px 14px;
     font-family: 'Sarabun', sans-serif;
-    font-size: 15px; resize: none;
-    color: #0d1b2a; background: #fafbfc;
-    outline: none;
+    font-size: 15px; resize: none; color: var(--text);
+    background: #fafbfc; outline: none;
     transition: border-color .2s, box-shadow .2s;
   }
   .detail-textarea::placeholder { color: #b8c4d0; }
   .detail-textarea:focus {
-    border-color: #0a84ff;
+    border-color: var(--brand);
     box-shadow: 0 0 0 3px rgba(10,132,255,.15);
     background: #fff;
   }
-  .char-count {
-    text-align: right; font-size: 11px;
-    color: #6b7a8d; margin-top: 6px; margin-bottom: 20px;
-  }
+  .char-count { text-align: right; font-size: 11px; color: var(--muted); margin-top: 6px; }
 
-  /* buttons */
-  .btn-row { display: flex; gap: 10px; }
-  .btn-cancel {
-    flex: 1; padding: 13px;
-    background: #f0f2f5; border: none;
-    border-radius: 14px; color: #6b7a8d;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px; font-weight: 700; cursor: pointer;
-    transition: background .15s;
+  /* ── Validation ── */
+  .val-alert {
+    background: #fff3cd; border-left: 3px solid #ffc107;
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; color: #7a5800;
+    margin-bottom: 14px; display: none;
+    animation: fadeIn .2s ease;
   }
-  .btn-cancel:active { background: #e4e6ea; }
-  .btn-send {
-    flex: 2; padding: 13px;
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px);} to{opacity:1;transform:none;} }
+
+  /* ── Submit Button ── */
+  .btn-submit {
+    width: 100%; padding: 16px;
     background: linear-gradient(135deg, #0a84ff, #005ec4);
-    border: none; border-radius: 14px; color: #fff;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 15px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(10,132,255,.35);
+    border: none; border-radius: var(--radius);
+    color: #fff; font-family: 'Sarabun', sans-serif;
+    font-size: 17px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(10,132,255,.35);
+    transition: all .2s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all .15s;
   }
-  .btn-send:disabled {
+  .btn-submit:active:not(:disabled) { transform: scale(.98); }
+  .btn-submit:disabled {
     background: linear-gradient(135deg,#a8c8f0,#8ab4dc);
     box-shadow: none; cursor: not-allowed;
   }
-  .btn-send:active:not(:disabled) { transform: scale(.97); }
-  .btn-send .btn-spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,.35);
+  .btn-submit .spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.35);
     border-top-color: #fff; border-radius: 50%;
-    animation: spin .7s linear infinite;
-    display: none;
+    animation: spin .7s linear infinite; display: none;
   }
-
-  /* validation */
-  .val-msg {
-    background: #fff3cd; border-left: 3px solid #ffc107;
-    border-radius: 8px; padding: 8px 12px;
-    font-size: 12px; color: #7a5800;
-    margin-bottom: 12px; display: none;
-    animation: fadeUp .2s ease;
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ── Success Overlay ── */
   .success-overlay {
@@ -201,22 +209,19 @@
     background: rgba(0,0,0,.65);
     backdrop-filter: blur(10px);
     display: flex; align-items: center; justify-content: center;
-    z-index: 999;
-    opacity: 0; pointer-events: none;
+    z-index: 999; opacity: 0; pointer-events: none;
     transition: opacity .2s ease;
   }
   .success-overlay.show { opacity: 1; pointer-events: auto; }
-
   .success-card {
     background: #fff; border-radius: 26px;
     padding: 38px 28px 30px; text-align: center;
     width: min(310px, 88vw);
     transform: scale(.8) translateY(28px);
     transition: transform .32s cubic-bezier(.34,1.56,.64,1);
-    box-shadow: 0 28px 72px rgba(0,0,0,.3);
+    box-shadow: 0 28px 72px rgba(0,0,0,.25);
   }
   .success-overlay.show .success-card { transform: scale(1) translateY(0); }
-
   .success-ring {
     width: 80px; height: 80px;
     margin: 0 auto 20px; position: relative;
@@ -226,34 +231,22 @@
     animation: ringPop .55s cubic-bezier(.34,1.56,.64,1) .05s both;
   }
   @keyframes ringPop { from{transform:scale(0) rotate(-90deg);opacity:0;} to{transform:scale(1) rotate(0);opacity:1;} }
-  .success-ring .check-icon {
+  .success-ring .check {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center; font-size: 30px;
     animation: checkPop .4s cubic-bezier(.34,1.56,.64,1) .28s both;
   }
   @keyframes checkPop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
-
-  .success-catbadge {
-    display: inline-block;
-    background: #f0f7ff; color: #0060cc;
-    font-size: 12px; font-weight: 700;
-    padding: 4px 14px; border-radius: 99px; margin-bottom: 10px;
-  }
-  .success-title { font-size: 20px; font-weight: 800; color: #0d1b2a; margin-bottom: 6px; }
-  .success-msg   { font-size: 13.5px; color: #6b7a8d; line-height: 1.65; }
-
-  .success-progress {
-    height: 3px; background: #eee;
-    border-radius: 99px; margin: 20px 0; overflow: hidden;
-  }
-  .success-progress-bar {
+  .success-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  .success-msg   { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+  .success-prog  { height: 3px; background: #eee; border-radius: 99px; margin: 18px 0; overflow: hidden; }
+  .success-prog-bar {
     height: 100%;
     background: linear-gradient(90deg, #30d158, #1aad46);
     border-radius: 99px; transform-origin: left;
     animation: shrink 2s linear forwards;
   }
   @keyframes shrink { from{transform:scaleX(1);} to{transform:scaleX(0);} }
-
   .btn-ok {
     width: 100%; padding: 13px;
     background: linear-gradient(135deg, #30d158, #1aad46);
@@ -266,341 +259,269 @@
   }
   .btn-ok:active { transform: scale(.97); }
 
-  /* ── Error Screen ── */
-  #error-screen {
-    display: none; text-align: center;
-    color: #fff; padding: 40px 24px;
-    animation: fadeUp .3s ease;
+  /* ── Loading Screen ── */
+  #loading-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #004d26, #001a0d);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    z-index: 10000; transition: opacity .35s;
   }
-  .err-icon  { font-size: 52px; margin-bottom: 16px; }
-  .err-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .err-msg   { font-size: 13px; color: rgba(255,255,255,.6); margin-bottom: 24px; }
-  .btn-retry {
-    background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 12px; color: #fff;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 14px; font-weight: 600;
-    padding: 10px 28px; cursor: pointer;
-  }
+  #loading-screen .loader-icon { font-size: 52px; animation: lp 1.3s ease-in-out infinite; }
+  #loading-screen p { color: rgba(255,255,255,.75); font-size: 15px; font-weight: 500; }
+  @keyframes lp { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.12);opacity:.65;} }
 </style>
 </head>
 <body>
 
-<!-- Loading Splash -->
-<div id="splash">
-  <div class="splash-icon">🛠️</div>
-  <div class="splash-title">บันทึกบริการด้าน IT</div>
-  <div class="splash-sub">บริการด้านเทคโนโลยีสารสนเทศ</div>
-  <div class="cat-pill" id="cat-pill">📋 กำลังโหลด...</div>
-  <div class="spinner-wrap">
-    <div class="spinner"></div>
-    <div class="spinner-text" id="spinner-text">กำลังเชื่อมต่อ...</div>
-  </div>
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="loader-icon">🛠️</div>
+  <p>กำลังโหลดระบบแจ้งซ่อม...</p>
 </div>
 
-<!-- Error Screen -->
-<div id="error-screen">
-  <div class="err-icon">⚠️</div>
-  <div class="err-title">เกิดข้อผิดพลาด</div>
-  <div class="err-msg" id="err-msg">ไม่สามารถโหลดได้</div>
-  <button class="btn-retry" onclick="location.reload()">ลองใหม่อีกครั้ง</button>
-</div>
-
-<!-- Detail Input Sheet -->
-<div class="detail-overlay" id="detail-overlay">
-  <div class="detail-sheet">
-
-    <div class="sheet-handle"></div>
-
-    <div class="sheet-cat" id="sheet-cat">📋 หมวดหมู่</div>
-    <div class="sheet-title">กรอกรายละเอียดปัญหา</div>
-    <div class="sheet-sub">อธิบายอาการเพื่อให้ทีม IT ช่วยได้เร็วขึ้น</div>
-
-    <!-- Profile row -->
-    <div class="profile-row" id="profile-row">
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-icon">🛠️</div>
+    <h1 class="header-title">แจ้งปัญหา IT</h1>
+    <p class="header-sub">บริการด้านเทคโนโลยีสารสนเทศ</p>
+    <div class="profile-chip" id="profile-chip">
       <div class="ava">👤</div>
       <div>
-        <div class="pname" id="sheet-pname">กำลังโหลด...</div>
-        <div class="plabel">ผู้แจ้ง</div>
+        <div class="p-name" id="profile-name">กำลังโหลด...</div>
+        <div class="p-label">ผู้แจ้ง</div>
       </div>
     </div>
+  </div>
+</header>
 
-    <!-- Textarea -->
+<!-- Main -->
+<main class="content">
+
+  <div class="section-label">
+    <i class="bi bi-grid-3x3-gap-fill"></i> เลือกประเภทปัญหา
+  </div>
+
+  <div class="cat-grid">
+    <div class="cat-card" onclick="selectCat(this)" data-cat="อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน">
+      <div class="icon-wrap">🖥️</div>
+      <div class="cat-name">อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </div>
+    <div class="cat-card" onclick="selectCat(this)" data-cat="อินเทอร์เน็ต และ ระบบเครือข่าย">
+      <div class="icon-wrap">🌐</div>
+      <div class="cat-name">อินเทอร์เน็ต และ ระบบเครือข่าย</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </div>
+    <div class="cat-card" onclick="selectCat(this)" data-cat="โปรแกรม และ ระบบงานมหาวิทยาลัย">
+      <div class="icon-wrap">💻</div>
+      <div class="cat-name">โปรแกรม และ ระบบงานมหาวิทยาลัย</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </div>
+    <div class="cat-card" onclick="selectCat(this)" data-cat="ห้องประชุม และ โสตทัศนูปกรณ์">
+      <div class="icon-wrap">📽️</div>
+      <div class="cat-name">ห้องประชุม และ โสตทัศนูปกรณ์</div>
+      <div class="cat-check"><i class="bi bi-check"></i></div>
+    </div>
+  </div>
+
+  <div class="detail-card">
     <div class="field-label">
       รายละเอียดปัญหา
-      <small><span id="char-count">0</span>/300</small>
+      <small><span id="char-count">0</span>/400</small>
     </div>
     <textarea
       id="detail-input"
       class="detail-textarea"
-      rows="4"
-      maxlength="300"
-      placeholder="เช่น เครื่องพิมพ์ไม่ตอบสนอง, เน็ตหลุดบ่อย..."
-      oninput="onDetailInput(this)"
+      rows="5" maxlength="400"
+      placeholder="เช่น คอมพิวเตอร์ไม่ติด, เน็ตหลุดบ่อย..."
+      oninput="document.getElementById('char-count').textContent=this.value.length"
     ></textarea>
-    <div class="char-count" style="margin-top:4px;margin-bottom:16px;">
-      <span id="char-hint"></span>
-    </div>
-
-    <!-- Validation -->
-    <div class="val-msg" id="val-msg">
-      <i class="bi bi-exclamation-triangle-fill"></i> กรุณากรอกรายละเอียดก่อนส่ง
-    </div>
-
-    <!-- Buttons -->
-    <div class="btn-row">
-      <button class="btn-cancel" onclick="cancelSheet()">ยกเลิก</button>
-      <button class="btn-send" id="btn-send" onclick="handleSend()">
-        <i class="bi bi-send-fill" id="send-icon"></i>
-        <span id="send-text">ส่งแจ้งซ่อม</span>
-        <div class="btn-spinner" id="send-spinner"></div>
-      </button>
-    </div>
-
+    <div class="char-count">กรอกให้ครบเพื่อให้ทีม IT ช่วยได้รวดเร็วขึ้น</div>
   </div>
-</div>
 
-<!-- Success Overlay -->
-<div class="success-overlay" id="success-overlay">
+  <div class="val-alert" id="val-alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span id="val-msg">กรุณาเลือกประเภทปัญหา และกรอกรายละเอียด</span>
+  </div>
+
+  <button class="btn-submit" id="btn-submit" onclick="handleSubmit()">
+    <i class="bi bi-send-fill" id="btn-icon"></i>
+    <span id="btn-text">บันทึกการแจ้งซ่อม</span>
+    <div class="spinner" id="btn-spinner"></div>
+  </button>
+
+</main>
+
+<!-- Success -->
+<div class="success-overlay" id="success-overlay" onclick="handleOverlayClick(event)">
   <div class="success-card">
     <div class="success-ring">
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 80 80" fill="none">
         <circle cx="40" cy="40" r="37" stroke="#30d158" stroke-width="4" stroke-linecap="round"/>
       </svg>
-      <div class="check-icon">✅</div>
+      <div class="check">✅</div>
     </div>
-    <div class="success-catbadge" id="success-catbadge">หมวดหมู่</div>
     <div class="success-title">แจ้งซ่อมสำเร็จ!</div>
-    <div class="success-msg">นายบอยได้รับเรื่องของคุณแล้ว<br>ขอขอบคุณที่กรุณา 🙏</div>
-    <div class="success-progress">
-      <div class="success-progress-bar" id="progress-bar"></div>
+    <div class="success-msg">ทีม IT ได้รับเรื่องของคุณแล้ว<br>ขอขอบคุณที่กรุณา 🙏</div>
+    <div class="success-prog">
+      <div class="success-prog-bar" id="prog-bar"></div>
     </div>
-    <button class="btn-ok" onclick="closeWindow()">
+    <button class="btn-ok" onclick="closeSuccess()">
       <i class="bi bi-check2-circle"></i> ปิดหน้าต่าง
     </button>
   </div>
 </div>
 
 <script>
-// ─────────────────────────────────
-//  CONFIG
-// ─────────────────────────────────
-const GAS_URL  = "https://script.google.com/macros/s/AKfycbyNsYMffSG4igl-EZfZBj37ylQHBKXHThm6kOYAL3wo2V_X4b5FWEK8udLqZLRzAzb0TQ/exec";
+// ══════════════════════════════════════
+//  CONFIG — แก้ 2 ค่านี้เท่านั้น
+// ══════════════════════════════════════
+const GAS_URL  = "วาง GAS Web App URL ตรงนี้";
 const LIFF_ID  = "2009847955-YjVZZBXW";
-const DEV_MODE = false;
+const DEV_MODE = false; // เปลี่ยนเป็น true เพื่อทดสอบบน browser
 
-const CATEGORY_MAP = {
-  "hardware" : { label: "อุปกรณ์คอมพิวเตอร์ และ เครื่องใช้สำนักงาน", icon: "🖥️" },
-  "network"  : { label: "อินเทอร์เน็ต และ ระบบเครือข่าย",             icon: "🌐" },
-  "software" : { label: "โปรแกรม และ ระบบงานมหาวิทยาลัย",             icon: "💻" },
-  "av"       : { label: "ห้องประชุม และ โสตทัศนูปกรณ์",               icon: "📽️" },
-};
+// ══════════════════════════════════════
+//  State
+// ══════════════════════════════════════
+let userProfile      = null;
+let selectedCategory = null;
+let autoCloseTimer   = null;
 
-let userProfile    = null;
-let catInfo        = null;
-let autoCloseTimer = null;
-
-// ─────────────────────────────────
-//  INIT — จุดเริ่มต้นเดียว
-// ─────────────────────────────────
+// ══════════════════════════════════════
+//  Init LIFF
+// ══════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
-
-  // ── วิธีที่ถูกต้องสำหรับ LIFF ──
-  // LIFF จะ init ก่อนเสมอ แล้วค่อยอ่าน URL
-  // เพราะหลัง redirect login, LIFF จะ restore query param ให้อัตโนมัติ
-  // ถ้าใช้ liff.init() ก่อนแล้วค่อยอ่าน window.location.search
-
   if (DEV_MODE) {
-    catInfo = CATEGORY_MAP['hardware'];
-    userProfile = { displayName: "Test User (Dev)", pictureUrl: "", userId: "Udev123" };
-    document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
-    showDetailSheet();
-    return;
+    setProfile({ displayName: "Test User", pictureUrl: "", userId: "Utest" });
+    hideLoading(); return;
   }
-
   try {
-    setSpinner('กำลังเชื่อมต่อ LINE...');
-
-    // init LIFF ก่อน — หลัง init LIFF จะ restore URL พร้อม query param
     await liff.init({ liffId: LIFF_ID });
-
-    // อ่าน ?category= จาก URL ก่อน login
-    const params = new URLSearchParams(window.location.search);
-    let catKey = (params.get('category') || '').toLowerCase();
-
-    // ถ้ามี category ให้เก็บไว้ก่อน login
-    if (catKey && CATEGORY_MAP[catKey]) {
-      sessionStorage.setItem('it_category', catKey);
-    }
-
-    if (!liff.isLoggedIn()) {
-      // ส่ง category ไปใน state parameter
-      liff.login({ state: catKey });
-      return;
-    }
-
-    // หลัง login — ดึง category จาก URL ก่อน ถ้าไม่มีค่อยดึงจาก state
-    if (!catKey) {
-      // ลองดู &state= ใน query string (LIFF return state กลับมาใน URL)
-      catKey = (params.get('state') || '').toLowerCase();
-    }
-
-    // fallback sessionStorage
-    if (!catKey || !CATEGORY_MAP[catKey]) {
-      catKey = sessionStorage.getItem('it_category') || '';
-    }
-
-    catInfo = CATEGORY_MAP[catKey];
-
-    if (!catInfo) {
-      showError(`ไม่พบหมวดหมู่ — กรุณาเปิดจากการ์ด LINE อีกครั้ง`);
-      return;
-    }
-
-    sessionStorage.setItem('it_category', catKey);
-    document.getElementById('cat-pill').textContent = `${catInfo.icon} ${catInfo.label}`;
-
-    setSpinner('กำลังดึงข้อมูลผู้ใช้...');
-    userProfile = await liff.getProfile();
-
-    showDetailSheet();
-
-  } catch (err) {
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    setProfile(await liff.getProfile());
+  } catch(err) {
     console.error(err);
-    showError(`เกิดข้อผิดพลาด: ${err.message}`);
+    setProfile({ displayName: "ไม่สามารถดึงข้อมูลได้", pictureUrl: "", userId: "-" });
+  } finally {
+    hideLoading();
   }
 });
 
-function setSpinner(text) {
-  document.getElementById('spinner-text').textContent = text;
-}
-
-// ─────────────────────────────────
-//  SHOW DETAIL SHEET
-// ─────────────────────────────────
-function showDetailSheet() {
-  // ใส่ข้อมูลใน sheet
-  document.getElementById('sheet-cat').textContent = `${catInfo.icon} ${catInfo.label}`;
-  document.getElementById('sheet-pname').textContent = userProfile.displayName;
-
-  // profile avatar
-  const row = document.getElementById('profile-row');
-  if (userProfile.pictureUrl) {
-    row.innerHTML = `
-      <img src="${userProfile.pictureUrl}" alt="avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e6ef;flex-shrink:0;" />
+function setProfile(p) {
+  userProfile = p;
+  if (p.pictureUrl) {
+    document.getElementById('profile-chip').innerHTML = `
+      <img src="${p.pictureUrl}" alt="avatar" />
       <div>
-        <div class="pname">${userProfile.displayName}</div>
-        <div class="plabel">ผู้แจ้ง</div>
+        <div class="p-name">${p.displayName}</div>
+        <div class="p-label">ผู้แจ้ง</div>
       </div>`;
+  } else {
+    document.getElementById('profile-name').textContent = p.displayName;
   }
-
-  // ซ่อน splash แล้วแสดง sheet
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('detail-overlay').classList.add('show');
-
-  // focus textarea หลัง animation
-  setTimeout(() => document.getElementById('detail-input').focus(), 400);
 }
 
-// ─────────────────────────────────
-//  TEXTAREA
-// ─────────────────────────────────
-function onDetailInput(el) {
-  const len = el.value.length;
-  document.getElementById('char-count').textContent = len;
-  document.getElementById('val-msg').style.display = 'none';
+function hideLoading() {
+  const el = document.getElementById('loading-screen');
+  el.style.opacity = '0';
+  setTimeout(() => el.remove(), 380);
 }
 
-// ─────────────────────────────────
-//  CANCEL
-// ─────────────────────────────────
-function cancelSheet() {
-  document.getElementById('detail-overlay').classList.remove('show');
-  setTimeout(() => {
-    if (!DEV_MODE && typeof liff !== 'undefined' && liff.isInClient()) {
-      liff.closeWindow();
-    }
-  }, 300);
+// ══════════════════════════════════════
+//  Category
+// ══════════════════════════════════════
+function selectCat(el) {
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCategory = el.dataset.cat;
+  document.getElementById('val-alert').style.display = 'none';
+  if (navigator.vibrate) navigator.vibrate(30);
 }
 
-// ─────────────────────────────────
-//  SEND
-// ─────────────────────────────────
-async function handleSend() {
+// ══════════════════════════════════════
+//  Submit
+// ══════════════════════════════════════
+async function handleSubmit() {
   const detail = document.getElementById('detail-input').value.trim();
+  const valEl  = document.getElementById('val-alert');
+  const msgEl  = document.getElementById('val-msg');
 
+  if (!selectedCategory && !detail) {
+    msgEl.textContent = 'กรุณาเลือกประเภทปัญหา และกรอกรายละเอียด';
+    showAlert(); return;
+  }
+  if (!selectedCategory) {
+    msgEl.textContent = 'กรุณาเลือกประเภทปัญหาก่อน';
+    showAlert(); return;
+  }
   if (!detail) {
-    const vm = document.getElementById('val-msg');
-    vm.style.display = 'block';
-    vm.style.animation = 'none';
-    void vm.offsetWidth;
-    vm.style.animation = 'fadeUp .2s ease';
-    document.getElementById('detail-input').focus();
-    return;
+    msgEl.textContent = 'กรุณากรอกรายละเอียดปัญหา';
+    showAlert(); return;
   }
 
-  setSendLoading(true);
-
-  const payload = {
-    displayName : userProfile?.displayName || "Unknown",
-    userId      : userProfile?.userId      || "-",
-    pictureUrl  : userProfile?.pictureUrl  || "-",
-    category    : catInfo.label,
-    detail      : detail
-  };
+  setLoading(true);
 
   try {
     const res  = await fetch(GAS_URL, {
       method  : "POST",
       headers : { "Content-Type": "text/plain" },
-      body    : JSON.stringify(payload)
+      body    : JSON.stringify({
+        displayName : userProfile?.displayName || "Unknown",
+        userId      : userProfile?.userId      || "-",
+        pictureUrl  : userProfile?.pictureUrl  || "-",
+        category    : selectedCategory,
+        detail      : detail
+      })
     });
     const json = await res.json();
 
     if (json.status === "success") {
-      // ซ่อน sheet ก่อน แล้วค่อยแสดง success
-      document.getElementById('detail-overlay').classList.remove('show');
-      setTimeout(() => showSuccess(), 200);
+      showSuccess();
     } else {
-      throw new Error(json.message || "GAS ตอบกลับผิดพลาด");
+      throw new Error(json.message || "เกิดข้อผิดพลาด");
     }
-  } catch (err) {
+  } catch(err) {
     console.error(err);
-    setSendLoading(false);
-    const vm = document.getElementById('val-msg');
-    vm.textContent = `⚠️ เกิดข้อผิดพลาด: ${err.message}`;
-    vm.style.display = 'block';
+    msgEl.textContent = `เกิดข้อผิดพลาด: ${err.message}`;
+    showAlert();
+    setLoading(false);
   }
 }
 
-function setSendLoading(on) {
-  const btn  = document.getElementById('btn-send');
-  const icon = document.getElementById('send-icon');
-  const text = document.getElementById('send-text');
-  const spin = document.getElementById('send-spinner');
-  btn.disabled          = on;
-  icon.style.display    = on ? 'none' : '';
-  text.textContent      = on ? 'กำลังส่ง...' : 'ส่งแจ้งซ่อม';
-  spin.style.display    = on ? 'block' : 'none';
+function showAlert() {
+  const el = document.getElementById('val-alert');
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'fadeIn .2s ease';
 }
 
-// ─────────────────────────────────
-//  SUCCESS
-// ─────────────────────────────────
-function showSuccess() {
-  document.getElementById('success-catbadge').textContent = `${catInfo.icon} ${catInfo.label}`;
+function setLoading(on) {
+  const btn  = document.getElementById('btn-submit');
+  const icon = document.getElementById('btn-icon');
+  const text = document.getElementById('btn-text');
+  const spin = document.getElementById('btn-spinner');
+  btn.disabled       = on;
+  icon.style.display = on ? 'none' : '';
+  text.textContent   = on ? 'กำลังบันทึก...' : 'บันทึกการแจ้งซ่อม';
+  spin.style.display = on ? 'block' : 'none';
+}
 
-  const bar = document.getElementById('progress-bar');
+// ══════════════════════════════════════
+//  Success
+// ══════════════════════════════════════
+function showSuccess() {
+  const bar = document.getElementById('prog-bar');
   bar.style.animation = 'none';
   void bar.offsetWidth;
   bar.style.animation = 'shrink 2s linear forwards';
-
   document.getElementById('success-overlay').classList.add('show');
-  autoCloseTimer = setTimeout(() => closeWindow(), 2000);
+  autoCloseTimer = setTimeout(() => closeSuccess(), 2000);
 }
 
-function closeWindow() {
+function closeSuccess() {
   if (autoCloseTimer) { clearTimeout(autoCloseTimer); autoCloseTimer = null; }
   document.getElementById('success-overlay').classList.remove('show');
   setTimeout(() => {
@@ -610,14 +531,8 @@ function closeWindow() {
   }, 280);
 }
 
-// ─────────────────────────────────
-//  ERROR
-// ─────────────────────────────────
-function showError(msg) {
-  document.getElementById('splash').style.display = 'none';
-  const el = document.getElementById('error-screen');
-  el.style.display = 'block';
-  document.getElementById('err-msg').textContent = msg;
+function handleOverlayClick(event) {
+  if (event.target === document.getElementById('success-overlay')) closeSuccess();
 }
 </script>
 
