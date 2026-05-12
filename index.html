@@ -378,8 +378,8 @@
 // ══════════════════════════════════════
 //  CONFIG — แก้ 2 ค่านี้เท่านั้น
 // ══════════════════════════════════════
-const GAS_URL  = "https://script.google.com/macros/s/AKfycbzlE4Pf351TKMcnwgKwWB-fajIbC-EaMjjItEi2gooBZ8HFbMDWexwDHATZfCnvBJVBUw/exec";
-const LIFF_ID = "2009847955-YjVZZBXW";
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbx4zzQ3VoHqhVwJVEnKpSI0848-Gh2wnjBuEI6cduShug657WU_lf6WY3Fg-p5-j0loXQ/exec";
+const LIFF_ID  = "2009847955-YjVZZBXW";
 const DEV_MODE = false; // เปลี่ยนเป็น true เพื่อทดสอบบน browser
 
 // ══════════════════════════════════════
@@ -401,8 +401,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     setProfile(await liff.getProfile());
-  } catch(err) {
-    console.error(err);
+  } catch (err) {
+    console.error('LIFF init error:', err);
     setProfile({ displayName: "ไม่สามารถดึงข้อมูลได้", pictureUrl: "", userId: "-" });
   } finally {
     hideLoading();
@@ -445,9 +445,9 @@ function selectCat(el) {
 // ══════════════════════════════════════
 async function handleSubmit() {
   const detail = document.getElementById('detail-input').value.trim();
-  const valEl  = document.getElementById('val-alert');
   const msgEl  = document.getElementById('val-msg');
 
+  // ── Validation ──
   if (!selectedCategory && !detail) {
     msgEl.textContent = 'กรุณาเลือกประเภทปัญหา และกรอกรายละเอียด';
     showAlert(); return;
@@ -464,7 +464,8 @@ async function handleSubmit() {
   setLoading(true);
 
   try {
-    const res  = await fetch(GAS_URL, {
+    // ── ส่งข้อมูลไป GAS ──
+    const res = await fetch(GAS_URL, {
       method  : "POST",
       headers : { "Content-Type": "text/plain" },
       body    : JSON.stringify({
@@ -475,18 +476,39 @@ async function handleSubmit() {
         detail      : detail
       })
     });
+
+    // ── ตรวจสอบ HTTP status ก่อน parse JSON ──
+    if (!res.ok) {
+      throw new Error(`เซิร์ฟเวอร์ตอบกลับ: ${res.status} ${res.statusText}`);
+    }
+
     const json = await res.json();
 
+    // ── GAS ต้องส่ง { status: "success" } กลับมา ──
     if (json.status === "success") {
+      // ✅ บันทึกสำเร็จ — แสดง overlay แล้วปิด LIFF
       showSuccess();
+      // หมายเหตุ: setLoading(false) ไม่ต้องเรียกเพราะหน้าจะปิดทันที
+      // แต่ถ้า DEV_MODE=true (ไม่ปิดจริง) ให้ reset ปุ่มหลัง overlay หาย
+      if (DEV_MODE) setTimeout(() => setLoading(false), 2500);
     } else {
-      throw new Error(json.message || "เกิดข้อผิดพลาด");
+      // GAS ส่ง status อื่นกลับมา เช่น "error"
+      throw new Error(json.message || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
-  } catch(err) {
-    console.error(err);
-    msgEl.textContent = `เกิดข้อผิดพลาด: ${err.message}`;
+
+  } catch (err) {
+    // ❌ เกิด Error — แสดงข้อความ ไม่ปิดหน้าจอ
+    console.error('Submit error:', err);
+
+    // แปลง network error ให้อ่านง่าย
+    let userMsg = err.message;
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      userMsg = 'ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+    }
+
+    msgEl.textContent = `⚠️ ${userMsg}`;
     showAlert();
-    setLoading(false);
+    setLoading(false); // ✅ คืนปุ่มให้กดได้ใหม่ เพื่อให้ user ลองส่งซ้ำ
   }
 }
 
@@ -496,6 +518,8 @@ function showAlert() {
   el.style.animation = 'none';
   void el.offsetWidth;
   el.style.animation = 'fadeIn .2s ease';
+  // เลื่อนหน้าไปที่ alert เพื่อให้เห็น
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function setLoading(on) {
@@ -510,28 +534,41 @@ function setLoading(on) {
 }
 
 // ══════════════════════════════════════
-//  Success
+//  Success + Auto-close LIFF
 // ══════════════════════════════════════
 function showSuccess() {
+  // รีเซ็ต progress bar animation
   const bar = document.getElementById('prog-bar');
   bar.style.animation = 'none';
   void bar.offsetWidth;
   bar.style.animation = 'shrink 2s linear forwards';
+
+  // แสดง overlay
   document.getElementById('success-overlay').classList.add('show');
+
+  // ⏱ ปิดอัตโนมัติหลัง 2 วินาที
   autoCloseTimer = setTimeout(() => closeSuccess(), 2000);
 }
 
 function closeSuccess() {
+  // ล้าง timer ป้องกันการ trigger ซ้ำ
   if (autoCloseTimer) { clearTimeout(autoCloseTimer); autoCloseTimer = null; }
+
+  // ซ่อน overlay ก่อน แล้วค่อยปิด LIFF
   document.getElementById('success-overlay').classList.remove('show');
+
   setTimeout(() => {
     if (!DEV_MODE && typeof liff !== 'undefined' && liff.isInClient()) {
+      // ✅ ปิดหน้าต่าง LIFF — ทำงานได้เฉพาะใน LINE app เท่านั้น
       liff.closeWindow();
+    } else if (DEV_MODE) {
+      console.log('[DEV_MODE] liff.closeWindow() จะถูกเรียกในอุปกรณ์จริง');
     }
-  }, 280);
+  }, 280); // รอ animation overlay จางหายก่อน
 }
 
 function handleOverlayClick(event) {
+  // กดพื้นที่นอก card → ปิดเลย (เหมือนกดปุ่ม ปิดหน้าต่าง)
   if (event.target === document.getElementById('success-overlay')) closeSuccess();
 }
 </script>
